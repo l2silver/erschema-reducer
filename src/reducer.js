@@ -8,8 +8,8 @@ import type {$mapOf, $reducer} from './hor'
 
 type $input = {
   schema: $schema,
-  mapOfEntityReducers?: $mapOf<$mapOf<$reducer>>,
-  mapOfRelationshipReducers?: $mapOf<$mapOf<$reducer>>,
+  entities?: $mapOf<$mapOf<$reducer>>,
+  relationships?: $mapOf<$mapOf<$reducer>>,
   overlordActions?: $mapOf<$reducer>,
   pageSchema?: $schema,
 }
@@ -27,34 +27,34 @@ const getPageModelGenerator = function(schema: $schema){
   }
 }
 
-export default function({schema, mapOfEntityReducers = {}, mapOfRelationshipReducers = {}, overlordActions = {}, pageSchema}: $input){
+export default function({schema, entities = {}, relationships = {}, overlordActions = {}, pageSchema}: $input){
   const pageEntity = {}
   const pageRelationship = {}
   if(pageSchema){
-    pageEntity.pages = mapOfEntityReducers.pages || entityReducer({name: 'pages', modelGenerator: getPageModelGenerator(pageSchema)})
-    pageRelationship.pages = mapOfRelationshipReducers.pages || relationshipPageReducer({name: 'pages', relationships: getPageRelationships(pageSchema)})
+    pageEntity.pages = entities.pages || entityReducer({name: 'pages', modelGenerator: getPageModelGenerator(pageSchema)})
+    pageRelationship.pages = relationships.pages || relationshipPageReducer({name: 'pages', relationships: getPageRelationships(pageSchema)})
   }
-  const entities = Object.keys(schema).reduce((finalResult, schemaName)=>{
+  const entityReducers = Object.keys(schema).reduce((finalResult, schemaName)=>{
     const entitySchema = schema[schemaName]
-    finalResult[schemaName] = mapOfEntityReducers[schemaName] || entityReducer({
+    finalResult[schemaName] = entities[schemaName] || entityReducer({
       name: schemaName,
       Model: entitySchema.Model
     })
     return finalResult
   }, pageEntity)
-  const relationships = Object.keys(schema).reduce((finalResult, schemaName)=>{
+  const relationshipReducers = Object.keys(schema).reduce((finalResult, schemaName)=>{
     const entitySchema = schema[schemaName]
     // $FlowFixMe
     const {relationships} = entitySchema
-    finalResult[schemaName] = mapOfRelationshipReducers[schemaName] || relationshipReducer({
+    finalResult[schemaName] = relationships[schemaName] || relationshipReducer({
       name: schemaName,
       relationships,
     })
     return finalResult
   }, pageRelationship)
   const entityRelationshipReducers = combineReducers({
-    entities: combineReducers(entities),
-    relationships: combineReducers(relationships),
+    entities: combineReducers(entityReducers),
+    relationships: combineReducers(relationshipReducers),
   })
   return reduxOverlord(entityRelationshipReducers, hor(overlordActions))
 }
