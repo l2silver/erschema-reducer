@@ -44,11 +44,10 @@ export default function({schema, entities = {}, relationships = {}, overlordActi
   }, pageEntity)
   const relationshipReducers = Object.keys(schema).reduce((finalResult, schemaName)=>{
     const entitySchema = schema[schemaName]
-    // $FlowFixMe
-    const {relationships} = entitySchema
+    const {relationships: relationshipSchemas} = entitySchema
     finalResult[schemaName] = relationships[schemaName] || relationshipReducer({
       name: schemaName,
-      relationships,
+      relationships: relationshipSchemas.map(({name, type, relationshipName})=>({name, type, relationshipName})),
     })
     return finalResult
   }, pageRelationship)
