@@ -1,6 +1,6 @@
 {
   "name": "erschema-reducer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A normalizer for erschema",
   "main": "dist/index.js",
   "scripts": {
